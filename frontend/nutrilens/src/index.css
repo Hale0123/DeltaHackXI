@@ -4,8 +4,8 @@
   font-weight: 400;
 
   color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  color: black;
+  background: linear-gradient(to bottom, #D9E4DD, #F8ECD5);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -25,9 +25,11 @@ a:hover {
 body {
   margin: 0;
   display: flex;
-  place-items: center;
+  justify-content: center; /* Centers items horizontally */
+  align-items: center; /* Centers items vertically */
+  flex-direction: column; /* Stacks items vertically */
   min-width: 320px;
-  min-height: 100vh;
+  min-height: 100vh; /* Ensures the body takes up the full viewport height */
 }
 
 h1 {

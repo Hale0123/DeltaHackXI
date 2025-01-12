@@ -1,36 +1,16 @@
 import React, { useState } from "react";
+import { BrowserRouter as Router, Routes, Route, useNavigate } from "react-router-dom";
+import Home from "./Home";
+import FoodDetails from "./FoodDetails";
 
 function App() {
-    const [image, setImage] = useState(null);
-    const [result, setResult] = useState("");
-
-    const handleUpload = (e) => {
-        setImage(e.target.files[0]);
-    };
-
-    const handleAnalyze = async () => {
-        const formData = new FormData();
-        formData.append("image", image);
-
-        try {
-            const response = await fetch("http://127.0.0.1:5000/analyze", {
-                method: "POST",
-                body: formData,
-            });
-            const data = await response.json();
-            setResult(data.message);
-        } catch (err) {
-            console.error("Error:", err);
-        }
-    };
-
     return (
-        <div style={{ textAlign: "center", marginTop: "50px" }}>
-            <h1>Food Analyzer</h1>
-            <input type="file" accept="image/*" onChange={handleUpload} />
-            <button onClick={handleAnalyze}>Analyze</button>
-            {result && <p>Result: {result}</p>}
-        </div>
+        <Router>
+            <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/details" element={<FoodDetails />} />
+            </Routes>
+        </Router>
     );
 }
 
