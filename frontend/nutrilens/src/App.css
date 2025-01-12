@@ -1,42 +1,76 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+/* Styling the NutriLens Logo with Multi-Color Gradient */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap');
+
+h1 {
+    font-size: 3rem; /* Larger font size for emphasis */
+    font-family: 'Montserrat', sans-serif; /* Clean, bold font family */
+    font-weight: 700; /* Extra bold text */
+    text-transform: uppercase; /* Uppercase for strong branding */
+    letter-spacing: 3px; /* Spacing between letters */
+    margin: 20px 0; /* Spacing around the logo */
+    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2); /* Subtle shadow for depth */
+    background: linear-gradient(90deg, #4caf50, #3cc4d9, #ff9800); /* Green, teal, and orange gradient */
+    -webkit-background-clip: text; /* Clip the gradient to the text */
+    -webkit-text-fill-color: transparent; /* Make the gradient visible on the text */
+    transition: transform 0.3s ease, text-shadow 0.3s ease; /* Smooth hover transitions */
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+/* Hover effect for the logo */
+h1:hover {
+    transform: scale(1.1); /* Slightly enlarge the logo on hover */
+    text-shadow: 3px 3px 8px rgba(0, 0, 0, 0.3); /* Enhanced shadow on hover */
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+
+/* Styling for the Toggle Range Slider */
+input[type="range"] {
+  -webkit-appearance: none; /* Remove default browser styles */
+  appearance: none;
+  width: 80px; /* Shorter width */
+  height: 30px; /* Thicker bar */
+  background: #ddd; /* Background color for the track */
+  border-radius: 15px; /* Rounded corners */
+  outline: none;
+  cursor: pointer;
+  accent-color: #4caf50; /* Green accent for supported browsers */
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+/* Slider Thumb */
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; /* Remove default thumb */
+  appearance: none;
+  width: 25px; /* Thumb width */
+  height: 25px; /* Thumb height */
+  background: #ffffff; /* White thumb color */
+  border: 2px solid #4caf50; /* Green border for thumb */
+  border-radius: 50%; /* Circular thumb */
+  cursor: pointer;
+  transition: transform 0.2s ease; /* Smooth scaling */
 }
 
-.card {
-  padding: 2em;
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.2); /* Slightly enlarge on hover */
 }
 
-.read-the-docs {
-  color: #888;
+/* Track Styling for Firefox */
+input[type="range"]::-moz-range-track {
+  background: #ddd;
+  height: 30px; /* Match the height for consistency */
+  border-radius: 15px;
+  cursor: pointer;
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 25px;
+  height: 25px;
+  background: #ffffff;
+  border: 2px solid #4caf50;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+input[type="range"]:focus {
+  outline: none;
+  background: #bbb; /* Slightly darker background when focused */
 }
