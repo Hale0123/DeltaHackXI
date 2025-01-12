@@ -38,26 +38,47 @@ def get_food_info(recognized_food):
     response = requests.post(url, json=payload, headers=headers)
     return response.json()
 
+
+
 @app.route('/analyze', methods=['POST'])
 def analyze():
+    # Ensure an image file is provided
     if 'image' not in request.files:
         return jsonify({"error": "No image file provided"}), 400
 
+    # Get the uploaded file (but don't process it yet)
     image_file = request.files['image']
+    app.logger.info(f"File received: {image_file.filename}")  # Use logger for better logging
+    print("File received:", image_file.filename, flush=True)  # Also print for debugging
 
-    # Preprocess the image using OpenCV
-    processed_image = preprocess_image(image_file)
+    # Simulate a successful response with "apple" data
+    hardcoded_response = {
+        "message": "Image processed successfully!",
+        "food": "apple",
+        "info": {
+            "foods": [
+                {
+                    "food_name": "apple",
+                    "serving_qty": 1,
+                    "serving_unit": "medium (3\" dia)",
+                    "serving_weight_grams": 182,
+                    "nf_calories": 95,
+                    "nf_total_fat": 0.3,
+                    "nf_protein": 0.5,
+                    "nf_total_carbohydrate": 25,
+                    "full_nutrients": []
+                }
+            ]
+        }
+    }
 
-    # Placeholder for OpenCV-based recognition logic
-    # For now, we'll use a dummy recognized food name
-    recognized_food = "apple"  # Replace with actual recognition logic later
-
-    # Get food information from the external API
     try:
-        food_info = get_food_info(recognized_food)
-        return jsonify({"message": "Image processed!", "food": recognized_food, "info": food_info})
+        # Send back the hardcoded response for now
+        return jsonify(hardcoded_response), 200
     except Exception as e:
-        return jsonify({"error": f"Failed to retrieve food info: {str(e)}"}), 500
+        # Return error message if something fails
+        return jsonify({"error": str(e)}), 500
 
-if __name__ == '__main__':
-    app.run(debug=True)
+if __name__ == "__main__":
+    app.run(debug=True)  # Enable debug mode
+

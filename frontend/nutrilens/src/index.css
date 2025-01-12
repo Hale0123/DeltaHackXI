@@ -5,7 +5,7 @@
 
   color-scheme: light dark;
   color: black;
-  background: whitesmoke;
+  background: linear-gradient(to bottom, #D9E4DD, #F8ECD5);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;

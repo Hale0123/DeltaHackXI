@@ -5,11 +5,9 @@ import './App.css';
 function Home() {
     const videoRef = useRef(null);
     const canvasRef = useRef(null);
-    const [result, setResult] = useState("");
     const [cameraEnabled, setCameraEnabled] = useState(false);
     const [mode, setMode] = useState("camera");
     const [selectedFile, setSelectedFile] = useState(null);
-    const [capturedImage, setCapturedImage] = useState(null);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -18,23 +16,24 @@ function Home() {
         } else {
             disableCamera();
         }
-    
-        // Cleanup to disable camera when component unmounts
+
         return () => {
             disableCamera();
+            if (selectedFile) {
+                URL.revokeObjectURL(selectedFile); // Clean up uploaded file object URL
+            }
         };
-    }, [mode]);
-    
+    }, [mode, selectedFile]);
+
     const enableCamera = async () => {
         try {
-            if (cameraEnabled) return; // Prevent multiple activations
+            if (cameraEnabled) return;
             setCameraEnabled(true);
-    
+
             const stream = await navigator.mediaDevices.getUserMedia({ video: true });
             if (videoRef.current) {
                 videoRef.current.srcObject = stream;
-    
-                // Play video only when metadata is loaded
+
                 videoRef.current.onloadedmetadata = () => {
                     videoRef.current.play().catch((err) => {
                         console.error("Video playback failed:", err);
@@ -45,18 +44,15 @@ function Home() {
             console.error("Error enabling camera:", err);
         }
     };
-    
-    
 
     const disableCamera = () => {
         if (videoRef.current && videoRef.current.srcObject) {
             const tracks = videoRef.current.srcObject.getTracks();
-            tracks.forEach((track) => track.stop()); // Stop all video tracks
-            videoRef.current.srcObject = null; // Clear video source
+            tracks.forEach((track) => track.stop());
+            videoRef.current.srcObject = null;
         }
         setCameraEnabled(false);
     };
-    
 
     const captureImage = () => {
         const canvas = canvasRef.current;
@@ -65,56 +61,84 @@ function Home() {
             const ctx = canvas.getContext("2d");
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
             const dataUrl = canvas.toDataURL("image/jpeg");
-            setCapturedImage(dataUrl); // Store captured image
             return dataUrl;
         }
+        console.error("Failed to capture image.");
+        return null;
     };
 
     const handleAnalyze = async () => {
+        console.log("Mode:", mode);
+        console.log("Selected File:", selectedFile);
+
         let formData = new FormData();
 
         if (mode === "camera") {
-            const imageData = captureImage();
+            const imageData = captureImage(); // Capture image from canvas
+            if (!imageData) {
+                alert("Failed to capture image.");
+                return;
+            }
+
+            console.log("Captured Image Data URL:", imageData);
             const blob = await fetch(imageData).then((res) => res.blob());
             formData.append("image", blob, "captured.jpg");
         } else if (mode === "upload" && selectedFile) {
+            console.log("Selected File:", selectedFile.name);
             formData.append("image", selectedFile, selectedFile.name);
         } else {
             alert("Please capture an image or upload a file.");
             return;
         }
 
+        // Debugging FormData
+        for (let pair of formData.entries()) {
+            console.log(`${pair[0]}:`, pair[1]);
+        }
+
         try {
-            const response = await fetch("http://127.0.0.1:5000/analyze", { method: "POST", body: formData });
+            const response = await fetch("http://127.0.0.1:5000/analyze", {
+                method: "POST",
+                body: formData,
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+
             const data = await response.json();
-            setResult(data.message);
-            navigate("/details", { state: { image: capturedImage, result: data.message } });
+            console.log("API Response JSON:", JSON.stringify(data, null, 2));
+
+            if (!data || !data.message) {
+                console.error("Invalid backend response:", data);
+                alert("The backend returned an unexpected response.");
+                return;
+            }
+
+            // Determine image to show
+            let imageToShow;
+            if (mode === "camera") {
+                imageToShow = captureImage(); // Use the newly captured image
+            } else if (mode === "upload" && selectedFile) {
+                imageToShow = URL.createObjectURL(selectedFile); // Use the uploaded file
+            }
+
+            console.log("Image to Show (Final Check):", imageToShow);
+
+            // Navigate only if the image is valid
+            if (imageToShow) {
+                navigate("/details", {
+                    state: {
+                        image: imageToShow,
+                        result: data, // Pass the full backend response
+                    },
+                });
+            }
         } catch (err) {
-            console.error("Error:", err);
+            console.error("Error during analysis:", err);
+            alert("An error occurred while analyzing the image."); // Display error only for genuine issues
         }
     };
-
-    let modeChangeTimeout;
-    const handleModeChange = (newMode) => {
-        clearTimeout(modeChangeTimeout);
-        modeChangeTimeout = setTimeout(() => {
-        setMode(newMode);
-        }, 300); // Delay mode change by 300ms
-    };
-
-
-    useEffect(() => {
-        if (mode === "camera") {
-            enableCamera();
-        } else {
-            disableCamera();
-        }
-
-        // Cleanup to ensure camera is stopped when the component unmounts
-        return () => {
-            disableCamera();
-        };
-    }, [mode]);
 
     return (
         <div style={{ textAlign: "center", marginTop: "50px" }}>
@@ -126,22 +150,16 @@ function Home() {
                         {mode === "camera" ? "📷 Camera Mode" : "📂 Upload Mode"}
                     </span>
                 </p>
-                <input
-    type="range"
-    min="0"
-    max="1"
-    step="1"
-    value={mode === "camera" ? "0" : "1"}
-    onChange={(e) => setMode(e.target.value === "0" ? "camera" : "upload")}
-    style={{
-        width: "80px", // Shorter width
-        height: "30px", // Thicker bar
-        accentColor: "#4caf50", // Green color for the bar
-        borderRadius: "15px", // Rounded bar
-        appearance: "none", // Remove default styles
-    }}
-/>
-
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "10px" }}>
+                    <label className="toggle-switch">
+                        <input
+                            type="checkbox"
+                            checked={mode === "camera"}
+                            onChange={() => setMode(mode === "camera" ? "upload" : "camera")}
+                        />
+                        <span className="slider"></span>
+                    </label>
+                </div>
             </div>
 
             {mode === "camera" && (
@@ -155,17 +173,26 @@ function Home() {
             )}
 
             {mode === "upload" && (
-                <div>
+                <div className="file-upload-container">
+                    <label htmlFor="file-upload" className="file-upload-label">
+                        Choose File
+                    </label>
                     <input
+                        id="file-upload"
                         type="file"
                         accept="image/*"
                         onChange={(e) => setSelectedFile(e.target.files[0])}
-                        style={{ marginTop: "20px" }}
+                        className="file-upload-input"
                     />
+                    <span className="file-upload-filename">
+                        {selectedFile ? selectedFile.name : "No file chosen"}
+                    </span>
                 </div>
             )}
 
-            <button onClick={handleAnalyze} style={{ marginTop: "20px" }}>Analyze</button>
+            <button onClick={handleAnalyze} className="analyze-button">
+                Analyze
+            </button>
         </div>
     );
 }
